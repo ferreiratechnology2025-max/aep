@@ -1,0 +1,232 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-001",
+        "target": "node-004"
+      },
+      {
+        "source": "node-002",
+        "target": "node-004"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "court_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "ruling_text"
+          }
+        ],
+        "payload": {
+          "params": {
+            "court": "STJ",
+            "ruling_id": "software-taxation-iss-icms"
+          },
+          "tool": "fetch_ruling"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "ruling_text"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "precedent_assessment"
+          }
+        ],
+        "payload": {
+          "params": {
+            "schema": [
+              "binding",
+              "persuasive",
+              "none"
+            ],
+            "text": "$ruling_text"
+          },
+          "tool": "classify_precedent"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "client_cases_db"
+          },
+          {
+            "access": "read",
+            "binding": "precedent_assessment"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "affected_cases"
+          }
+        ],
+        "payload": {
+          "params": {
+            "jurisdiction": "BR_federal",
+            "taxonomy": "ISS_vs_ICMS_software"
+          },
+          "tool": "search_affected_cases"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "ruling_text"
+          },
+          {
+            "access": "read",
+            "binding": "affected_cases"
+          },
+          {
+            "access": "read",
+            "binding": "precedent_assessment"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "memo_draft"
+          }
+        ],
+        "payload": {
+          "params": {
+            "affected_cases": "$affected_cases",
+            "analysis": "$precedent_assessment",
+            "ruling": "$ruling_text"
+          },
+          "tool": "generate_memo"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "court_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "client_cases_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "ruling_text",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "precedent_assessment",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "affected_cases",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "memo_draft",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-review-court-ruling-precedent-001"
+    }
+  },
+  "checksum": "39243a9c83e0576fad48166ba47f59ebbd109abd00e9dbad8850dfc4ab99f9d7"
+}

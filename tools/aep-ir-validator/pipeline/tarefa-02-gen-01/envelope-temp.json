@@ -1,0 +1,311 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-002",
+        "target": "node-004"
+      },
+      {
+        "source": "node-002",
+        "target": "node-005"
+      },
+      {
+        "source": "node-003",
+        "target": "node-006"
+      },
+      {
+        "source": "node-004",
+        "target": "node-006"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      },
+      {
+        "source": "node-006",
+        "target": "node-007"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contract_document"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "parsed_clauses"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "contract_document"
+          },
+          "tool": "parse_contract"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "parsed_clauses"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "classified_clauses"
+          }
+        ],
+        "payload": {
+          "params": {
+            "taxonomy": "liability_indemnification_governing_law"
+          },
+          "tool": "classify_clause"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "classified_clauses"
+          },
+          {
+            "access": "read",
+            "binding": "risk_thresholds"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "analysis_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "category": "liability_cap",
+            "threshold": "3x_contract_value"
+          },
+          "tool": "assess_risk"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "classified_clauses"
+          },
+          {
+            "access": "read",
+            "binding": "risk_thresholds"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "analysis_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "category": "indemnification_gap"
+          },
+          "tool": "assess_risk"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "classified_clauses"
+          },
+          {
+            "access": "read",
+            "binding": "risk_thresholds"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "analysis_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "category": "governing_law_jurisdiction"
+          },
+          "tool": "assess_risk"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [],
+        "effects": [],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "analysis_results"
+          }
+        ],
+        "outputs": [],
+        "type": "sync"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-007",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "analysis_results"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "report_draft"
+          }
+        ],
+        "payload": {
+          "params": {
+            "format": "structured_risk_report"
+          },
+          "tool": "generate_report"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "contract_document",
+          "scope": "session",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "risk_thresholds",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "parsed_clauses",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "classified_clauses",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "analysis_results",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "report_draft",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-analyze-contract-liability-001"
+    }
+  },
+  "checksum": "b6963a4bffb9e8f45a82b69eafc6517d63626103d8972a518f47396071bc1a2a"
+}

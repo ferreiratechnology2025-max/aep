@@ -1,0 +1,316 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "anpd_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "recent_decisions"
+          }
+        ],
+        "payload": {
+          "params": {
+            "date_from": "now-7d"
+          },
+          "tool": "fetch_anpd_decisions"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "recent_decisions"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "penalty_details"
+          }
+        ],
+        "payload": {
+          "params": {
+            "decision_text": "${recent_decisions}"
+          },
+          "tool": "extract_penalty_details"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "penalty_details"
+          },
+          {
+            "access": "read",
+            "binding": "client_dpia"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "matched_risks"
+          }
+        ],
+        "payload": {
+          "params": {
+            "decision": "${penalty_details}",
+            "dpia_report": "${client_dpia}"
+          },
+          "tool": "match_risk_pattern"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "matched_risks"
+          },
+          {
+            "access": "read",
+            "binding": "client_revenue"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "exposure_assessment"
+          }
+        ],
+        "payload": {
+          "params": {
+            "client_revenue": "${client_revenue}",
+            "risk_score": "${matched_risks}"
+          },
+          "tool": "assess_exposure"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "WRITE",
+          "READ"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "matched_risks"
+          },
+          {
+            "access": "read",
+            "binding": "exposure_assessment"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "risk_register"
+          }
+        ],
+        "payload": {
+          "operation": "append_risk_assessments"
+        },
+        "type": "mutation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "penalty_details"
+          },
+          {
+            "access": "read",
+            "binding": "risk_register"
+          },
+          {
+            "access": "read",
+            "binding": "exposure_assessment"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "intelligence_brief"
+          }
+        ],
+        "payload": {
+          "params": {
+            "decisions": "${penalty_details}",
+            "exposure": "${exposure_assessment}",
+            "risks": "${risk_register}"
+          },
+          "tool": "generate_brief"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "anpd_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "client_dpia",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "risk_register",
+          "scope": "session",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "intelligence_brief",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "recent_decisions",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "penalty_details",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "matched_risks",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "exposure_assessment",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": 0,
+          "mutability": "readonly",
+          "name": "client_revenue",
+          "scope": "session",
+          "type": "number"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-monitor-anpd-decisions-001"
+    }
+  },
+  "checksum": "4c8323910a0bb33522aa8b177c2ac5d33037f7df71bde6a24908fc1de14b5cfb"
+}

@@ -1,0 +1,260 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-003",
+        "target": "node-005"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "legislation_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "search_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "date_from": "2024-01-01",
+            "query": "privacidade de dados AND responsabilizacao algoritmica"
+          },
+          "tool": "search_legislative_db"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "search_results"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "proposal_text"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "{{search_results[*].uri}}"
+          },
+          "tool": "read_document"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "proposal_text"
+          },
+          {
+            "access": "read",
+            "binding": "compliance_framework"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "conflict_analysis"
+          }
+        ],
+        "payload": {
+          "params": {
+            "framework": "{{compliance_framework}}",
+            "text": "{{proposal_text}}"
+          },
+          "tool": "cross_reference"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "conflict_analysis"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "flags_register"
+          }
+        ],
+        "payload": {
+          "params": {
+            "article_id": "{{conflict_analysis.article_id}}",
+            "policy_id": "{{conflict_analysis.policy_id}}",
+            "reason": "{{conflict_analysis.reason}}"
+          },
+          "tool": "flag_conflict"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "flags_register"
+          },
+          {
+            "access": "read",
+            "binding": "conflict_analysis"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "report_draft"
+          }
+        ],
+        "payload": {
+          "operation": "compile_monitoring_report",
+          "sections": [
+            "summary",
+            "flagged_conflicts",
+            "recommendations"
+          ]
+        },
+        "type": "mutation"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "tool_execution",
+          "mutability": "readonly",
+          "name": "legislation_db",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "mutability": "readonly",
+          "name": "compliance_framework",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "flags_register",
+          "scope": "session",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "report_draft",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "search_results",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": "",
+          "mutability": "mutable",
+          "name": "proposal_text",
+          "scope": "execution",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "conflict_analysis",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "tool_execution",
+        "memory_rw"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-monitor-data-privacy-legislation-001"
+    }
+  },
+  "checksum": "f327ae5e7a575059f30160f8526132fbde105776f46bd039d3fd383a441fe030"
+}

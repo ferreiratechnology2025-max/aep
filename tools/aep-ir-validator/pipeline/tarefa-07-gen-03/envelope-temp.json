@@ -1,0 +1,346 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      },
+      {
+        "source": "node-006",
+        "target": "node-007"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contracts_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "contract_list"
+          }
+        ],
+        "payload": {
+          "params": {
+            "client_id": "*",
+            "status": "active"
+          },
+          "tool": "list_contracts"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contract_list"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "contract_texts"
+          }
+        ],
+        "payload": {
+          "params": {
+            "batch": true,
+            "contract_id": "${contract_list[*].contract_id}",
+            "count": 47
+          },
+          "tool": "read_contract"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contract_texts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "extracted_clauses"
+          }
+        ],
+        "payload": {
+          "params": {
+            "clause_type": [
+              "liability",
+              "indemnification"
+            ],
+            "contract_text": "${contract_texts}"
+          },
+          "tool": "extract_clause"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "extracted_clauses"
+          },
+          {
+            "access": "read",
+            "binding": "regulation_text"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "comparison_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "clause_text": "${extracted_clauses}",
+            "regulation_ref": "ANPD Resolution CD/ANPD No. 12/2026",
+            "regulation_text": "${regulation_text}"
+          },
+          "tool": "compare_against_regulation"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "comparison_results"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "affected_contracts"
+          }
+        ],
+        "payload": {
+          "criteria": {
+            "requires_revision": true
+          },
+          "description": "Identify contracts whose liability/indemnification clauses diverge from the new penalty framework",
+          "operation": "filter_divergent_clauses"
+        },
+        "type": "mutation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "affected_contracts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "prioritized_contracts"
+          }
+        ],
+        "payload": {
+          "params": {
+            "contracts": "${affected_contracts}",
+            "criteria": "revenue_exposure"
+          },
+          "tool": "prioritize_by_risk"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-007",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "prioritized_contracts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "amendment_plan"
+          }
+        ],
+        "payload": {
+          "params": {
+            "contracts": "${prioritized_contracts}",
+            "priority": "revenue_exposure"
+          },
+          "tool": "generate_amendment_schedule"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "contracts_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "regulation_text",
+          "scope": "session",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "contract_list",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "contract_texts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "extracted_clauses",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "comparison_results",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "affected_contracts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "prioritized_contracts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "amendment_plan",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "tool_execution",
+        "memory_rw"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-cross-ref-contracts-001"
+    }
+  },
+  "checksum": "f7b6f6566237a127f6f04f2b8b8b706eb77ace660661bbae99c66e9cb5c4d446"
+}

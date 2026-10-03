@@ -1,0 +1,347 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-003"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-004",
+        "target": "node-006"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      },
+      {
+        "source": "node-006",
+        "target": "node-007"
+      },
+      {
+        "source": "node-004",
+        "target": "node-007"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "policy_uri"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "policy_document"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "policy_uri"
+          },
+          "tool": "read_policy"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "regulation_uri"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "regulation_text"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "regulation_uri"
+          },
+          "tool": "read_regulation"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "policy_document"
+          },
+          {
+            "access": "read",
+            "binding": "regulation_text"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "comparison_result"
+          }
+        ],
+        "payload": {
+          "params": {
+            "policy_text": "policy_document",
+            "regulation_text": "regulation_text",
+            "scope": "data_retention"
+          },
+          "tool": "compare_documents"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "comparison_result"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "gap_analysis"
+          }
+        ],
+        "payload": {
+          "description": "Identify specific policy sections requiring revision from comparison result",
+          "operation": "extract_policy_gaps"
+        },
+        "type": "transformation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "gap_analysis"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "severity_ratings"
+          }
+        ],
+        "payload": {
+          "params": {
+            "gap": "gap_analysis"
+          },
+          "tool": "assess_gap_severity"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "gap_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "severity_ratings"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "recommendations"
+          }
+        ],
+        "payload": {
+          "description": "Generate recommended amendments based on gaps and severity",
+          "operation": "derive_recommendations"
+        },
+        "type": "transformation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-007",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "gap_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "recommendations"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "action_plan"
+          }
+        ],
+        "payload": {
+          "params": {
+            "gaps": "gap_analysis",
+            "recommendations": "recommendations"
+          },
+          "tool": "generate_action_plan"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "policy_uri",
+          "scope": "session",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "regulation_uri",
+          "scope": "session",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "policy_document",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "regulation_text",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "comparison_result",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "gap_analysis",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "severity_ratings",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "recommendations",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "action_plan",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-audit-policy-mlsc-001"
+    }
+  },
+  "checksum": "a9ef73f7570d5ae9574afe0b3d7869305df36b4a3c98312ba266a06ab11241fa"
+}

@@ -1,0 +1,257 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-003"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "policy_document"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "policy_content"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "internal://policies/data_retention"
+          },
+          "tool": "read_policy"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "regulation_text"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "regulation_content"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "gov://regulations/mlsc"
+          },
+          "tool": "read_regulation"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "policy_content"
+          },
+          {
+            "access": "read",
+            "binding": "regulation_content"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "gap_analysis"
+          }
+        ],
+        "payload": {
+          "params": {
+            "scope": "data_retention"
+          },
+          "tool": "compare_documents"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "gap_analysis"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "gap_severity"
+          }
+        ],
+        "payload": {
+          "params": {
+            "scale": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "tool": "assess_gap_severity"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "gap_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "gap_severity"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "action_plan"
+          }
+        ],
+        "payload": {
+          "params": {
+            "include_recommendations": true
+          },
+          "tool": "generate_action_plan"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "mutability": "readonly",
+          "name": "policy_document",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "mutability": "readonly",
+          "name": "regulation_text",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "policy_content",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "regulation_content",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "gap_analysis",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "gap_severity",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "action_plan",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-audit-policy-mlsc-001"
+    }
+  },
+  "checksum": "e2d3646a6649621365fa3489ff4bdcd1808ea00b749b7418573b7ae7f1ce2551"
+}

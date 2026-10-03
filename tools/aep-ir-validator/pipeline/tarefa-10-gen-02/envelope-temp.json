@@ -1,0 +1,339 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-001",
+        "target": "node-003"
+      },
+      {
+        "source": "node-002",
+        "target": "node-004"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-002",
+        "target": "node-005"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      },
+      {
+        "source": "node-001",
+        "target": "node-006"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "sbom_document"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "parsed_packages"
+          }
+        ],
+        "payload": {
+          "params": {
+            "expected_count": 1247,
+            "uri": "sbom_document"
+          },
+          "tool": "parse_sbom"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "parsed_packages"
+          },
+          {
+            "access": "read",
+            "binding": "license_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "license_classifications"
+          }
+        ],
+        "payload": {
+          "params": {
+            "focus": [
+              "GPL-3.0",
+              "AGPL-3.0"
+            ],
+            "license_id": "per_package",
+            "mode": "batch"
+          },
+          "tool": "classify_license"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "parsed_packages"
+          },
+          {
+            "access": "read",
+            "binding": "sbom_document"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "usage_patterns"
+          }
+        ],
+        "payload": {
+          "params": {
+            "distinctions": [
+              "linked",
+              "aggregated"
+            ],
+            "package_id": "per_package",
+            "sbom": "sbom_document"
+          },
+          "tool": "analyze_usage_pattern"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "usage_patterns"
+          },
+          {
+            "access": "read",
+            "binding": "license_classifications"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "copyleft_triggers"
+          }
+        ],
+        "payload": {
+          "params": {
+            "distribution_model": "commercial",
+            "license_type": "license_classifications",
+            "usage_pattern": "usage_patterns"
+          },
+          "tool": "check_copyleft_trigger"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "copyleft_triggers"
+          },
+          {
+            "access": "read",
+            "binding": "license_classifications"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "risk_assessment"
+          }
+        ],
+        "payload": {
+          "criteria": {
+            "incompatible": [
+              "GPL-3.0",
+              "AGPL-3.0"
+            ],
+            "triggered_only": true
+          },
+          "operation": "aggregate_risks"
+        },
+        "type": "mutation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "parsed_packages"
+          },
+          {
+            "access": "read",
+            "binding": "risk_assessment"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "compliance_report"
+          }
+        ],
+        "payload": {
+          "params": {
+            "format": "compliance_audit",
+            "packages": "parsed_packages",
+            "remediation": "auto",
+            "risks": "risk_assessment"
+          },
+          "tool": "generate_report"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "sbom_document",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "license_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "parsed_packages",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "license_classifications",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "usage_patterns",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "copyleft_triggers",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "risk_assessment",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "compliance_report",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-license-compliance-audit-001"
+    }
+  },
+  "checksum": "a00c03be0620519e5c104e1360b2e5057896a42b3589858c0a2add2cd4976631"
+}

@@ -1,0 +1,298 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contracts_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "contract_list"
+          }
+        ],
+        "payload": {
+          "params": {
+            "client_id": "*",
+            "status": "active"
+          },
+          "tool": "list_contracts"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contract_list"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "contract_texts"
+          }
+        ],
+        "payload": {
+          "params": {
+            "batch": true,
+            "contract_id": "${contract_list[*].id}"
+          },
+          "tool": "read_contract"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "contract_texts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "extracted_clauses"
+          }
+        ],
+        "payload": {
+          "params": {
+            "clause_type": [
+              "liability",
+              "indemnification"
+            ]
+          },
+          "tool": "extract_clause"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "extracted_clauses"
+          },
+          {
+            "access": "read",
+            "binding": "regulation_text"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "affected_contracts"
+          }
+        ],
+        "payload": {
+          "params": {
+            "regulation": "ANPD Resolution CD/ANPD No. 12/2026"
+          },
+          "tool": "compare_against_regulation"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "affected_contracts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "prioritized_contracts"
+          }
+        ],
+        "payload": {
+          "params": {
+            "criteria": "revenue_exposure"
+          },
+          "tool": "prioritize_by_risk"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "prioritized_contracts"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "amendment_plan"
+          }
+        ],
+        "payload": {
+          "params": {
+            "priority": "revenue_exposure"
+          },
+          "tool": "generate_amendment_schedule"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "contracts_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "regulation_text",
+          "scope": "session",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "contract_list",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "contract_texts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "extracted_clauses",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "affected_contracts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": [],
+          "mutability": "mutable",
+          "name": "prioritized_contracts",
+          "scope": "execution",
+          "type": "array"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "amendment_plan",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-contract-crossref-lgpd-001"
+    }
+  },
+  "checksum": "fe9a95cb53a1c4fb6b97a66960e402a20c4a8b5e675ec094e2b4a66f489efaee"
+}

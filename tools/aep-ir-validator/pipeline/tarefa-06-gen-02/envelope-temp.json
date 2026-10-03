@@ -1,0 +1,319 @@
+{
+  "plan": {
+    "edges": [
+      {
+        "source": "node-001",
+        "target": "node-002"
+      },
+      {
+        "source": "node-002",
+        "target": "node-003"
+      },
+      {
+        "source": "node-003",
+        "target": "node-004"
+      },
+      {
+        "source": "node-003",
+        "target": "node-005"
+      },
+      {
+        "source": "node-004",
+        "target": "node-005"
+      },
+      {
+        "source": "node-005",
+        "target": "node-006"
+      },
+      {
+        "source": "node-003",
+        "target": "node-006"
+      }
+    ],
+    "nodes": [
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-001",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "legislative_db"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "search_results"
+          }
+        ],
+        "payload": {
+          "params": {
+            "query": "PLP 68/2026 IBS technology services amendments"
+          },
+          "tool": "search_legislative_db"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-002",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "search_results"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "bill_text"
+          }
+        ],
+        "payload": {
+          "params": {
+            "uri": "{{search_results.top_uri}}"
+          },
+          "tool": "read_document"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-003",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "bill_text"
+          },
+          {
+            "access": "read",
+            "binding": "client_tax_profile"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "impact_analysis"
+          }
+        ],
+        "payload": {
+          "params": {
+            "bill_text": "{{bill_text}}",
+            "client_profile": "{{client_tax_profile}}"
+          },
+          "tool": "analyze_tax_impact"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-004",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "impact_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "client_tax_profile"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "regime_comparison"
+          }
+        ],
+        "payload": {
+          "params": {
+            "criteria": [
+              "effective_rate",
+              "compliance_cost",
+              "credit_recovery"
+            ],
+            "options": [
+              "simples_nacional",
+              "lucro_real"
+            ]
+          },
+          "tool": "compare_tax_regimes"
+        },
+        "type": "tool_call"
+      },
+      {
+        "capabilities": [
+          "memory_rw"
+        ],
+        "effects": [
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-005",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "impact_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "regime_comparison"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "recommendation"
+          }
+        ],
+        "payload": {
+          "logic": "select optimal tax regime transition based on impact analysis and regime comparison",
+          "operation": "derive_recommendation"
+        },
+        "type": "transformation"
+      },
+      {
+        "capabilities": [
+          "tool_execution",
+          "memory_rw"
+        ],
+        "effects": [
+          "CALL_TOOL",
+          "READ",
+          "WRITE"
+        ],
+        "id": "node-006",
+        "inputs": [
+          {
+            "access": "read",
+            "binding": "impact_analysis"
+          },
+          {
+            "access": "read",
+            "binding": "recommendation"
+          }
+        ],
+        "outputs": [
+          {
+            "access": "write",
+            "binding": "memo_draft"
+          }
+        ],
+        "payload": {
+          "params": {
+            "analysis": "{{impact_analysis}}",
+            "recommendation": "{{recommendation}}"
+          },
+          "tool": "generate_memo"
+        },
+        "type": "tool_call"
+      }
+    ],
+    "plan_header": {
+      "declared_bindings": [
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "legislative_db",
+          "scope": "persistent",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": null,
+          "mutability": "readonly",
+          "name": "client_tax_profile",
+          "scope": "session",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "search_results",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": "",
+          "mutability": "mutable",
+          "name": "bill_text",
+          "scope": "execution",
+          "type": "string"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "impact_analysis",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "regime_comparison",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "recommendation",
+          "scope": "execution",
+          "type": "object"
+        },
+        {
+          "capability": "memory_rw",
+          "default": {},
+          "mutability": "mutable",
+          "name": "memo_draft",
+          "scope": "execution",
+          "type": "object"
+        }
+      ],
+      "declared_capabilities": [
+        "memory_rw",
+        "tool_execution"
+      ],
+      "ir_version": "1.0.0",
+      "plan_id": "plan-tax-memo-plp68-001"
+    }
+  },
+  "checksum": "37072add6189658f8aaa9d65e68a54aa1532f29e0fcfc177e28ab7f9ad73c091"
+}
